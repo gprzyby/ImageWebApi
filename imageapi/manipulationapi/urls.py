@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import get_image_info
+from .views import get_image_info, ImageCreationView, GetUpdateRemoveImageView
 
 urlpatterns = [
-    path('', get_image_info)
+    path('', ImageCreationView.as_view()),
+    path('<int:id>', GetUpdateRemoveImageView.as_view())
 ]
