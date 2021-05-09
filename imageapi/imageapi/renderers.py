@@ -11,7 +11,7 @@ class PngRenderer(BaseRenderer):
     render_style = 'binary'
 
     def render(self, data: Image.Image, accepted_media_type=None, renderer_context=None):
-        if type(data) is dict:
+        if not isinstance(data, Image.Image):
             return data
 
         return self._save_image_into_buffer(data)

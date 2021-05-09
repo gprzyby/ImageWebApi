@@ -101,7 +101,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'imageapi.exceptions_handler.json_exception_handler'
+}
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
