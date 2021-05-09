@@ -1,5 +1,6 @@
 from io import BytesIO
 
+from PIL import Image
 from rest_framework.renderers import BaseRenderer
 
 
@@ -9,8 +10,13 @@ class PngRenderer(BaseRenderer):
     charset = None
     render_style = 'binary'
 
-    def render(self, data, accepted_media_type=None, renderer_context=None):
-        buffer = BytesIO()
-        data.save(buffer, format='png')
-        return buffer.getbuffer()
+    def render(self, data: Image.Image, accepted_media_type=None, renderer_context=None):
+        if type(data) is dict:
+            return data
 
+        return self._save_image_into_buffer(data)
+
+    def _save_image_into_buffer(self, image: Image.Image):
+        buffer = BytesIO()
+        image.save(buffer, format='png')
+        return buffer.getbuffer()
