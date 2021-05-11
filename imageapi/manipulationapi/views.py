@@ -41,5 +41,5 @@ def crop_image_view(request: Request, id: int, start_x: int, start_y: int, end_x
 def scale_image_view(request: Request, id: int):
     scale = float(request.query_params.get('scale'))
     image_file = get_image_file_by_id(id)
-    scaled_iamge = services.scale_image(image_file, scale)
-    return Response(data=scaled_iamge)
+    scaled_image = services.scale_image(image_file, scale)
+    return Response(data=scaled_image)

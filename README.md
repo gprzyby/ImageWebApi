@@ -43,7 +43,7 @@ Returns rendered image as response in specified image id
 Crop image(without modifications on stored one) and return as rendered image <br>
   Could return response with 400 if specified parameters are invalid 
   
-## Plans for future
+## Plans for future 
 - [ ] swagger documentation generation
 - [ ] create Dockerfile for containerization 
 - [ ] improve image manipulation endpoints
