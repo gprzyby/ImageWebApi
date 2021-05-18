@@ -1,17 +1,23 @@
+from django.contrib.auth import get_user_model
 from rest_framework import views, generics
 from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 import rest_framework.status as http_status
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from imageapi.renderers import PngRenderer
 from manipulationapi import services
 from manipulationapi.models import ImageStorage
 from manipulationapi.serializers import ImageStorageSerializer
 from manipulationapi.utils import get_image_file_by_id
+from users.authentication import JWTCookieAuthentication
+from users.permissions import IsModelOwner
 
 
-class ImageCreationView(generics.CreateAPIView):
+class ImageCreationView(generics.ListCreateAPIView):
     serializer_class = ImageStorageSerializer
 
 
@@ -19,6 +25,8 @@ class GetUpdateRemoveImageView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ImageStorageSerializer
     lookup_field = 'id'
     queryset = ImageStorage.objects
+    permission_classes = IsAuthenticated
+    authentication_classes = JWTCookieAuthentication, JWTAuthentication
 
 
 @api_view(['GET'])
@@ -29,7 +37,7 @@ def get_image_file_view(request: Request, id: int):
 
 
 @api_view(['GET'])
-@renderer_classes([PngRenderer])
+@renderer_classes([PngRenderer, JSONRenderer])
 def crop_image_view(request: Request, id: int, start_x: int, start_y: int, end_x: int, end_y: int):
     image_file = get_image_file_by_id(id)
     cropped_image = services.crop_image(image_file, start_x, start_y, end_x, end_y)
