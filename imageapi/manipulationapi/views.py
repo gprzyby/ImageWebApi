@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 import rest_framework.status as http_status
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from guardian.shortcuts import assign_perm
 
 from imageapi.renderers import PngRenderer
 from manipulationapi import services
@@ -19,6 +20,26 @@ from users.permissions import IsModelOwner
 
 class ImageCreationView(generics.ListCreateAPIView):
     serializer_class = ImageStorageSerializer
+    authentication_classes = JWTCookieAuthentication, JWTAuthentication
+    permission_classes = IsAuthenticated,
+
+    def get_queryset(self):
+        user_id = self.request.user.id
+
+        return ImageStorage.objects.filter(owner__id=user_id)
+
+    def perform_create(self, serializer: ImageStorageSerializer):
+        authenticated_user = self.request.user
+        created_object = serializer.save(owner=authenticated_user)
+        self.assign_permissions(created_object, authenticated_user.pk)
+
+    def assign_permissions(self, created_object, creator_id):
+        creator = get_user_model().objects.get(id=creator_id)
+        permissions_to_assign = [f'manipulationapi.{method}_imagestorage' for method in ['add', 'change', 'delete', 'view']]
+
+        for permission in permissions_to_assign:
+            assign_perm(permission, creator, created_object)
+
 
 
 class GetUpdateRemoveImageView(generics.RetrieveUpdateDestroyAPIView):

@@ -1,3 +1,4 @@
+import json
 from io import BytesIO
 
 from PIL import Image
@@ -12,7 +13,8 @@ class PngRenderer(BaseRenderer):
 
     def render(self, data: Image.Image, accepted_media_type=None, renderer_context=None):
         if not isinstance(data, Image.Image):
-            return data
+            marshalled_data = json.dumps(data)
+            return marshalled_data.encode()
 
         return self._save_image_into_buffer(data)
 
