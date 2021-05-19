@@ -22,3 +22,8 @@ class IsModelOwner(DjangoObjectPermissions):
     def __init__(self):
         super().__init__()
         self.perms_map = {**self.perms_map, **self.additional_perms_map}
+
+    def has_permission(self, request, view):
+        return _check_if_authenticated(request.user)
+
+
