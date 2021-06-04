@@ -1,25 +1,25 @@
 from django.contrib.auth import get_user_model
-from rest_framework import views, generics
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-import rest_framework.status as http_status
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from guardian.shortcuts import assign_perm
 
-from imageapi.renderers import PngRenderer
 from manipulationapi import services
 from manipulationapi.models import ImageStorage
 from manipulationapi.serializers import ImageStorageSerializer
 from manipulationapi.utils import convert_to_image_file
+
 from users.authentication import JWTCookieAuthentication
 from users.permissions import IsModelOwner
+from imageapi.renderers import PngRenderer
 
 
 class ImageCreationView(generics.ListCreateAPIView):
     serializer_class = ImageStorageSerializer
     authentication_classes = JWTCookieAuthentication, JWTAuthentication
-    permission_classes = IsAuthenticated,
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         user_id = self.request.user.id
@@ -33,11 +33,11 @@ class ImageCreationView(generics.ListCreateAPIView):
 
     def assign_permissions(self, created_object, creator_id):
         creator = get_user_model().objects.get(id=creator_id)
-        permissions_to_assign = [f'manipulationapi.{method}_imagestorage' for method in ['add', 'change', 'delete', 'view']]
+        permissions_to_assign = [f'manipulationapi.{method}_imagestorage'
+                                 for method in ['add', 'change', 'delete', 'view']]
 
         for permission in permissions_to_assign:
             assign_perm(permission, creator, created_object)
-
 
 
 class GetUpdateRemoveImageView(generics.RetrieveUpdateDestroyAPIView):
@@ -50,7 +50,7 @@ class GetUpdateRemoveImageView(generics.RetrieveUpdateDestroyAPIView):
 
 class BaseImageFileView(generics.GenericAPIView):
     permission_classes = IsAuthenticated, IsModelOwner
-    renderer_classes = PngRenderer,
+    renderer_classes = (PngRenderer, )
     queryset = ImageStorage.objects
     lookup_field = 'id'
 
@@ -67,7 +67,7 @@ class GetImageFileView(BaseImageFileView):
 
 class CropImageView(BaseImageFileView):
 
-    def get(self, request: Request, start_x: int, start_y: int, end_x: int, end_y: int, **kwargs):
+    def get(self, start_x: int, start_y: int, end_x: int, end_y: int, **kwargs):
         image_file = self.get_image_file()
         cropped_image = services.crop_image(image_file, start_x, start_y, end_x, end_y)
         return Response(data=cropped_image)

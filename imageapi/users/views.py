@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.authentication import BasicAuthentication
@@ -19,14 +19,13 @@ from .serializers import UserSerializer
 
 @csrf_exempt
 class UserView(APIView):
-    permission_classes = IsAuthenticatedOrPost,
+    permission_classes = (IsAuthenticatedOrPost, )
     authentication_classes = JWTAuthentication, JWTCookieAuthentication
 
     def get(self, request: Request):
         user_id = request.user.id
         user_instance = get_user_model().objects.get(pk=user_id)
         serialized_user = UserSerializer(instance=user_instance)
-        authenticate()
         return Response(serialized_user.data)
 
     def post(self, request: Request):
@@ -57,6 +56,9 @@ def create_cookie_authentication_view(request: Request):
     jwt_token = AccessToken.for_user(user_instance)
     cookie_key = api_settings.user_settings['JWT_TOKEN_KEY']
     response = Response(status=status.HTTP_201_CREATED)
-    response.set_cookie(cookie_key, str(jwt_token), jwt_settings.ACCESS_TOKEN_LIFETIME.seconds, httponly=True)
+    response.set_cookie(cookie_key,
+                        str(jwt_token),
+                        jwt_settings.ACCESS_TOKEN_LIFETIME.seconds,
+                        httponly=True)
     return response
 
